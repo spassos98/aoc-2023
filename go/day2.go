@@ -25,6 +25,12 @@ func (m *Move) updateMove(value int, color string) {
 	}
 }
 
+func (m *Move) updateMaxMove(move Move) {
+	m.red = max(m.red, move.red)
+	m.green = max(m.green, move.green)
+	m.blue = max(m.blue, move.blue)
+}
+
 var redCubes int = 12
 var greenCubes int = 13
 var blueCubes int = 14
@@ -73,6 +79,27 @@ func isValidGame(gameLine string) int {
 		}
 	}
 	return gameNumber
+}
+
+func getGameValue(gameLine string) int {
+	firstSplit := strings.Split(gameLine, ":")
+	movesString := firstSplit[1]
+	moves := getMoves(movesString)
+	maxMove := Move{0, 0, 0}
+	for _, move := range moves {
+		maxMove.updateMaxMove(move)
+	}
+	return maxMove.red * maxMove.blue * maxMove.green
+}
+
+func day2Part2() {
+	scanner := bufio.NewScanner(os.Stdin)
+	sum := 0
+	for scanner.Scan() {
+		gameLine := scanner.Text()
+		sum += getGameValue(gameLine)
+	}
+	fmt.Printf("%d\n", sum)
 }
 
 func day2() {
