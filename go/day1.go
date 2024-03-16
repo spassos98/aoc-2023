@@ -46,7 +46,7 @@ func getFirstAndLastDigit(calibrationValue string) (int, int) {
 	return firstDigit, lastDigit
 }
 
-func main() {
+func day1() {
 	scanner := bufio.NewScanner(os.Stdin)
 	sum := 0
 	for scanner.Scan() {
