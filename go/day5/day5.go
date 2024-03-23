@@ -34,7 +34,6 @@ func processMapLines(mapLines []string) []MapRange {
 }
 
 func getMapping(v int, m []MapRange) int {
-	fmt.Printf("Mapping %d\n", v)
 	for _, r := range m {
 		if r.sourceStart <= v && v <= r.sourceStart+r.rangeLength {
 			diffVal := v - r.sourceStart
@@ -58,7 +57,6 @@ func part1() {
 
 	scanner.Scan()
 	seedsLine := scanner.Text()
-	fmt.Println(seedsLine)
 	scanner.Scan()
 
 	firstLine := true
@@ -107,5 +105,10 @@ func part1() {
 }
 
 func main() {
-	part1()
+	part := os.Args[1]
+	if part == "2" {
+		part2()
+	} else {
+		part1()
+	}
 }
