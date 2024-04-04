@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func pickNode(pos int, seen map[int]bool, graph [][]int) int {
@@ -20,14 +21,18 @@ func pickNode(pos int, seen map[int]bool, graph [][]int) int {
 	return -1
 }
 
-func maxPath(initialPosition int, startPos []int, graph [][]int) int {
+func maxPath(initialPosition int, startPos []int, graph [][]int) (int, []int) {
 	currPos := startPos
 	steps := 1
 	seen := make(map[int]bool)
 	seen[initialPosition] = true
+	loopPositions := make([]int, 1)
+	loopPositions[0] = initialPosition
 	for {
 		node1 := currPos[0]
 		node2 := currPos[1]
+		loopPositions = append(loopPositions, node1)
+		loopPositions = append(loopPositions, node2)
 		if _, ok := seen[node1]; ok {
 			break
 		}
@@ -45,17 +50,10 @@ func maxPath(initialPosition int, startPos []int, graph [][]int) int {
 		currPos[1] = nextNode2
 		steps += 1
 	}
-	return steps
+	return steps, loopPositions
 }
 
-func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	var matrix []string
-	for scanner.Scan() {
-		line := scanner.Text()
-		matrix = append(matrix, line)
-	}
-
+func buildGraph(matrix []string) (int, [][]int) {
 	var graph [][]int
 	var startPosition int
 	rowLen := len(matrix[0])
@@ -109,6 +107,19 @@ func main() {
 			graph = append(graph, neigh)
 		}
 	}
+	return startPosition, graph
+}
+
+func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	var matrix []string
+	for scanner.Scan() {
+		line := scanner.Text()
+		matrix = append(matrix, line)
+	}
+
+	rowLen := len(matrix[0])
+	startPosition, graph := buildGraph(matrix)
 
 	var startNeigh []int
 	for x := 0; x < rowLen*len(matrix); x++ {
@@ -120,6 +131,64 @@ func main() {
 		}
 	}
 
-	sol := maxPath(startPosition, startNeigh, graph)
-	fmt.Printf("%d\n", sol)
+	part := os.Args[1]
+	sol, loopPositions := maxPath(startPosition, startNeigh, graph)
+	if part == "1" {
+		fmt.Printf("%d\n", sol)
+		return
+	}
+
+	var transformedMatrix []string
+	for row, line := range matrix {
+		var transformedLine []rune
+		for col, val := range line {
+			currPos := row*rowLen + col
+			if slices.Contains(loopPositions, currPos) {
+				if val == '7' {
+					transformedLine = append(transformedLine, '┐')
+				} else if val == 'L' {
+					transformedLine = append(transformedLine, '└')
+				} else if val == 'F' {
+					transformedLine = append(transformedLine, '┌')
+				} else if val == 'J' {
+					transformedLine = append(transformedLine, '┘')
+				} else if val == '|' {
+					transformedLine = append(transformedLine, '│')
+				} else if val == '-' {
+					transformedLine = append(transformedLine, '─')
+				} else {
+					transformedLine = append(transformedLine, val)
+				}
+			} else {
+				transformedLine = append(transformedLine, '.')
+			}
+		}
+		transformedMatrix = append(transformedMatrix, string(transformedLine))
+	}
+	for _, line := range transformedMatrix {
+		fmt.Println(line)
+	}
+
+	nEnclosed := 0
+
+	for _, line := range transformedMatrix {
+		nEdges := 0
+		openChar := '-'
+		for _, val := range line {
+			if val == '│' {
+				nEdges += 1
+			} else if val == '.' && nEdges%2 == 1 {
+				nEnclosed += 1
+			} else if val == '└' || val == '┌' {
+				openChar = val
+			} else if val == '┘' || val == '┐' {
+				if openChar == '└' && val == '┐' {
+					nEdges += 1
+				} else if openChar == '┌' && val == '┘' {
+					nEdges += 1
+				}
+			}
+		}
+	}
+	fmt.Printf("%d\n", nEnclosed)
 }
