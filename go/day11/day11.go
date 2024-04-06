@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"slices"
-	"strings"
 )
 
 type Galaxy struct {
@@ -20,8 +18,24 @@ func abs(val int) int {
 	return val
 }
 
-func galaxyDistance(a Galaxy, b Galaxy) int {
-	return abs(a.row-b.row) + abs(a.col-b.col)
+func galaxyDistance(a Galaxy, b Galaxy, emptyRows []int, emptyColums []int, emptyValue int) int {
+	baseDistance := abs(a.row-b.row) + abs(a.col-b.col)
+	startRow := min(a.row, b.row)
+	endRow := max(a.row, b.row)
+	for _, row := range emptyRows {
+		if startRow <= row && row <= endRow {
+			baseDistance += emptyValue - 1
+		}
+	}
+
+	startCol := min(a.col, b.col)
+	endCol := max(a.col, b.col)
+	for _, col := range emptyColums {
+		if startCol <= col && col <= endCol {
+			baseDistance += emptyValue - 1
+		}
+	}
+	return baseDistance
 }
 
 func main() {
@@ -31,6 +45,7 @@ func main() {
 		line := scanner.Text()
 		originalGalaxy = append(originalGalaxy, line)
 	}
+
 	var emptyRows []int
 	for row, line := range originalGalaxy {
 		isEmpty := true
@@ -62,29 +77,8 @@ func main() {
 	fmt.Printf("Empty rows %v\n", emptyRows)
 	fmt.Printf("Empty cols %v\n", emptyColumns)
 
-	expandedGalaxyCols := len(emptyColumns) + len(originalGalaxy)
-	var expandedGalaxy []string
-	for row, line := range originalGalaxy {
-		if slices.Contains(emptyRows, row) {
-			emptyRow := strings.Repeat(".", expandedGalaxyCols)
-			expandedGalaxy = append(expandedGalaxy, emptyRow)
-		}
-		var expandedLine []rune
-		for col, val := range line {
-			if slices.Contains(emptyColumns, col) {
-				expandedLine = append(expandedLine, val)
-			}
-			expandedLine = append(expandedLine, val)
-		}
-		expandedGalaxy = append(expandedGalaxy, string(expandedLine))
-	}
-
-	for _, line := range expandedGalaxy {
-		fmt.Printf("%v\n", line)
-	}
-
 	var galaxies []Galaxy
-	for row, line := range expandedGalaxy {
+	for row, line := range originalGalaxy {
 		for col, val := range line {
 			if val == '#' {
 				galaxies = append(galaxies, Galaxy{row, col})
@@ -95,7 +89,7 @@ func main() {
 	sum := 0
 	for i := 0; i < len(galaxies); i++ {
 		for j := i + 1; j < len(galaxies); j++ {
-			sum += galaxyDistance(galaxies[i], galaxies[j])
+			sum += galaxyDistance(galaxies[i], galaxies[j], emptyRows, emptyColumns, 1000000)
 		}
 	}
 	fmt.Printf("%d\n", sum)
