@@ -39,6 +39,7 @@ func galaxyDistance(a Galaxy, b Galaxy, emptyRows []int, emptyColums []int, empt
 }
 
 func main() {
+	part := os.Args[1]
 	scanner := bufio.NewScanner(os.Stdin)
 	var originalGalaxy []string
 	for scanner.Scan() {
@@ -86,10 +87,15 @@ func main() {
 		}
 	}
 
+	emptyValue := 0
+	if part == "2" {
+		emptyValue = 1000000
+	}
+
 	sum := 0
 	for i := 0; i < len(galaxies); i++ {
 		for j := i + 1; j < len(galaxies); j++ {
-			sum += galaxyDistance(galaxies[i], galaxies[j], emptyRows, emptyColumns, 1000000)
+			sum += galaxyDistance(galaxies[i], galaxies[j], emptyRows, emptyColumns, emptyValue)
 		}
 	}
 	fmt.Printf("%d\n", sum)
