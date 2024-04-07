@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var memo [][][][]int
+var memo [][][]int
 
 func arrangementIsValid(arrangement []rune, expectedGroups []int) int {
 	isGroup := false
@@ -76,8 +76,9 @@ func countArrangements(line string) int {
 	return value
 }
 
-func setArrangement2(arrangement []rune, pos int, expectedGroups []int, isGroup bool, groupCount int, groupPos int) int {
+func setArrangement2(arrangement []rune, pos int, expectedGroups []int, groupCount int, groupPos int) int {
 
+	isGroup := groupCount > 0
 	if pos > 0 {
 		val := arrangement[pos-1]
 
@@ -99,34 +100,27 @@ func setArrangement2(arrangement []rune, pos int, expectedGroups []int, isGroup 
 		}
 	}
 
-	isGroupPos := 0
-	if isGroup {
-		isGroupPos = 1
-	}
-	if memo[pos][groupPos][groupCount][isGroupPos] != -1 {
-		return memo[pos][groupPos][groupCount][isGroupPos]
+	if memo[pos][groupPos][groupCount] != -1 {
+		return memo[pos][groupPos][groupCount]
 	}
 
 	remainingChars := len(arrangement) - pos
 	remainingGroups := len(expectedGroups) - groupPos
 	if remainingGroups > 1+remainingChars/2 {
-		memo[pos][groupPos][groupCount][isGroupPos] = 0
+		memo[pos][groupPos][groupCount] = 0
 		return 0
 	}
 
 	if pos == len(arrangement) {
-		// fmt.Printf("Arr %s\n", string(arrangement))
-		// fmt.Printf("\tEx Groups%v\n", expectedGroups)
-		// fmt.Printf("\tisGroup %t groupCount %d groupPos %d\n", isGroup, groupCount, groupPos)
 		if isGroup {
 			if groupPos == len(expectedGroups)-1 && expectedGroups[groupPos] == groupCount {
-				memo[pos][groupPos][groupCount][isGroupPos] = 1
+				memo[pos][groupPos][groupCount] = 1
 				return 1
 			}
 			return 0
 		} else {
 			if groupPos == len(expectedGroups) {
-				memo[pos][groupPos][groupCount][isGroupPos] = 1
+				memo[pos][groupPos][groupCount] = 1
 				return 1
 			}
 			return 0
@@ -134,7 +128,7 @@ func setArrangement2(arrangement []rune, pos int, expectedGroups []int, isGroup 
 	}
 
 	if arrangement[pos] != '?' {
-		return setArrangement2(arrangement, pos+1, expectedGroups, isGroup, groupCount, groupPos)
+		return setArrangement2(arrangement, pos+1, expectedGroups, groupCount, groupPos)
 	}
 
 	operationalArr := make([]rune, len(arrangement))
@@ -145,12 +139,12 @@ func setArrangement2(arrangement []rune, pos int, expectedGroups []int, isGroup 
 	copy(damagedArr, arrangement)
 	damagedArr[pos] = '#'
 
-	operationalValue := setArrangement2(operationalArr, pos+1, expectedGroups, isGroup, groupCount, groupPos)
-	damagedValue := setArrangement2(damagedArr, pos+1, expectedGroups, isGroup, groupCount, groupPos)
+	operationalValue := setArrangement2(operationalArr, pos+1, expectedGroups, groupCount, groupPos)
+	damagedValue := setArrangement2(damagedArr, pos+1, expectedGroups, groupCount, groupPos)
 
 	possibleArrs := operationalValue + damagedValue
 
-	memo[pos][groupPos][groupCount][isGroupPos] = possibleArrs
+	memo[pos][groupPos][groupCount] = possibleArrs
 	return possibleArrs
 }
 
@@ -179,7 +173,7 @@ func countArrangements2(line string) int {
 		copy(newGroups[i:], groups)
 	}
 
-	value := setArrangement2(arrangement, 0, newGroups, false, 0, 0)
+	value := setArrangement2(arrangement, 0, newGroups, 0, 0)
 	return value
 }
 
@@ -188,8 +182,7 @@ func resetMemo() {
 	for a := 0; a < l; a++ {
 		for b := 0; b < l; b++ {
 			for c := 0; c < l; c++ {
-				memo[a][b][c][0] = -1
-				memo[a][b][c][1] = -1
+				memo[a][b][c] = -1
 			}
 
 		}
@@ -204,11 +197,11 @@ func main() {
 	part := os.Args[1]
 
 	for a := 0; a < l; a++ {
-		var newArr [][][]int
+		var newArr [][]int
 		for b := 0; b < l; b++ {
-			var newArrb [][]int
+			var newArrb []int
 			for c := 0; c < l; c++ {
-				newArrb = append(newArrb, []int{-1, -1})
+				newArrb = append(newArrb, -1)
 			}
 			newArr = append(newArr, newArrb)
 
