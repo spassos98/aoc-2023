@@ -19,21 +19,23 @@ func countDifferences(a string, b string) int {
 func checkVerticalReflection(matrix []string, pos int) bool {
 	l := pos
 	r := pos + 1
+	diff := 0
 	for l >= 0 && r < len(matrix) {
-		if matrix[l] != matrix[r] {
+		diff += countDifferences(matrix[l], matrix[r])
+		if diff > 1 {
 			return false
 		}
 		l--
 		r++
 	}
-	return true
+	return diff == 1
 }
 
 func findDuplicateRow(matrix []string) int {
 	for idx, currLine := range matrix {
 		if idx < len(matrix)-1 {
 			nextLine := matrix[idx+1]
-			if currLine == nextLine && checkVerticalReflection(matrix, idx) {
+			if countDifferences(currLine, nextLine) <= 1 && checkVerticalReflection(matrix, idx) {
 				return idx + 1
 			}
 		}
@@ -44,16 +46,18 @@ func findDuplicateRow(matrix []string) int {
 func checkHorizontalReflection(matrix []string, pos int) bool {
 	l := pos
 	r := pos + 1
+	diff := 0
 	for l >= 0 && r < len(matrix[0]) {
 		lCol := getCol(matrix, l)
 		rCol := getCol(matrix, r)
-		if lCol != rCol {
+		diff += countDifferences(lCol, rCol)
+		if diff > 1 {
 			return false
 		}
 		l--
 		r++
 	}
-	return true
+	return diff == 1
 }
 
 func getCol(matrix []string, pos int) string {
@@ -69,7 +73,7 @@ func findDuplicateColumn(matrix []string) int {
 		if col < len(matrix[0])-1 {
 			currCol := getCol(matrix, col)
 			nextCol := getCol(matrix, col+1)
-			if currCol == nextCol && checkHorizontalReflection(matrix, col) {
+			if countDifferences(currCol, nextCol) <= 1 && checkHorizontalReflection(matrix, col) {
 				return col + 1
 			}
 		}
